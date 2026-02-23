@@ -1,51 +1,82 @@
+<!-- ============================================================
+     PYTHON — EXERCÍCIOS DE MANUTENÇÃO INDUSTRIAL
+     Página interativa com 6 ejercicios de Python organizados
+     por nivel: Básico (1-2), Intermediário (3-4), Avançado (5-6).
+     Funcionalidades principales:
+       - Navegação lateral entre ejercicios
+       - Sistema de progreso persistente (localStorage)
+       - Dicas expansíveis por ejercicio
+       - Filtro por nivel de dificultad
+       - Notificaciones toast al completar
+     ============================================================ -->
 <!DOCTYPE html>
+<!-- lang="pt-BR": define el idioma de la página como portugués de Brasil -->
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Desafio 4</title>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Barlow+Condensed:wght@300;600;800&family=Barlow:wght@400;500&display=swap" rel="stylesheet">
+  <!-- Codificación de caracteres: permite acentos y caracteres especiales -->
+  <meta charset="UTF-8">
+  <!-- Viewport responsive: adapta la escala al ancho del dispositivo móvil -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Python — Exercícios de Manutenção Industrial</title>
+  <!-- Fuentes externas de Google Fonts:
+       - JetBrains Mono: tipografía monoespaciada para código
+       - Barlow Condensed: títulos compactos y llamativos
+       - Barlow: texto general del cuerpo -->
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Barlow+Condensed:wght@300;600;800&family=Barlow:wght@400;500&display=swap" rel="stylesheet">
 <style>
+  /* -------------------------------------------------------
+     VARIABLES GLOBALES DE COLOR (Custom Properties CSS)
+     Centralizar colores aquí permite cambiar el tema
+     en un solo lugar sin tocar el resto del código.
+     ------------------------------------------------------- */
   :root {
-    --bg: #0a0c10;
-    --panel: #111318;
-    --border: #1e2330;
-    --accent: #f0a500;
-    --accent2: #00d4aa;
-    --accent3: #e05260;
-    --text: #c8cdd8;
-    --text-dim: #5a6070;
-    --code-bg: #0d1117;
-    --hint-bg: #1a1f0d;
-    --hint-border: #3a5020;
-    --basic: #00d4aa;
-    --inter: #f0a500;
-    --adv: #e05260;
+    --bg: #0a0c10;           /* Fondo general de la página (negro oscuro) */
+    --panel: #111318;        /* Fondo de paneles y tarjetas */
+    --border: #1e2330;       /* Color de bordes y separadores */
+    --accent: #f0a500;       /* Acento principal: amarillo/naranja */
+    --accent2: #00d4aa;      /* Acento secundario: verde agua */
+    --accent3: #e05260;      /* Acento terciario: rojo */
+    --text: #c8cdd8;         /* Texto principal */
+    --text-dim: #5a6070;     /* Texto atenuado / subtítulos */
+    --code-bg: #0d1117;      /* Fondo de bloques de código */
+    --hint-bg: #1a1f0d;      /* Fondo de tarjetas de dica */
+    --hint-border: #3a5020;  /* Borde de tarjetas de dica */
+    /* Colores por nivel de dificultad del ejercicio */
+    --basic: #00d4aa;        /* Básico: verde agua */
+    --inter: #f0a500;        /* Intermediário: amarillo */
+    --adv: #e05260;          /* Avançado: rojo */
   }
 
+  /* Reset universal: elimina margin y padding predeterminados del navegador
+     box-sizing: border-box hace que padding y border no aumenten el tamaño total del elemento */
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
+  /* Estilos base del cuerpo de la página */
   body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Barlow', sans-serif;
-    min-height: 100vh;
-    overflow-x: hidden;
+    background: var(--bg);        /* Fondo oscuro definido en variables */
+    color: var(--text);           /* Color de texto por defecto */
+    font-family: 'Barlow', sans-serif; /* Fuente principal del cuerpo */
+    min-height: 100vh;            /* Mínimo de altura = toda la pantalla */
+    overflow-x: hidden;           /* Evita scroll horizontal no deseado */
   }
 
-  /* HEADER */
+  /* -------------------------------------------------------
+     HEADER: barra superior fija con logo y filtros de nivel
+     position: sticky + top: 0 hace que se quede visible
+     al hacer scroll. backdrop-filter crea el efecto blur.
+     ------------------------------------------------------- */
   header {
     border-bottom: 1px solid var(--border);
     padding: 0 40px;
-    display: flex;
+    display: flex;                    /* Distribución horizontal de elementos */
     align-items: center;
-    justify-content: space-between;
+    justify-content: space-between;   /* Logo a la izquierda, badges a la derecha */
     height: 64px;
-    position: sticky;
+    position: sticky;                 /* Se fija al hacer scroll */
     top: 0;
-    z-index: 100;
-    background: rgba(10,12,16,0.95);
-    backdrop-filter: blur(10px);
+    z-index: 100;                     /* Encima de todo el contenido */
+    background: rgba(10,12,16,0.95);  /* Fondo semitransparente */
+    backdrop-filter: blur(10px);      /* Efecto blur de vidrio esmerilado */
   }
 
   .logo {
@@ -85,36 +116,50 @@
   .badge.inter:hover, .badge.inter.active { background: var(--inter); color: #000; }
   .badge.adv:hover,   .badge.adv.active   { background: var(--adv);   color: #fff; }
 
-  /* PROGRESS BAR */
+  /* -------------------------------------------------------
+     BARRA DE PROGRESO SUPERIOR
+     Se posiciona justo debajo del header (top: 64px).
+     El ancho del elemento .progress-bar se actualiza
+     dinámicamente desde JavaScript según los ejercicios
+     completados.
+     ------------------------------------------------------- */
   .progress-bar-wrap {
     height: 3px;
     background: var(--border);
-    position: sticky;
+    position: sticky;  /* Permanece visible al hacer scroll, bajo el header */
     top: 64px;
-    z-index: 99;
+    z-index: 99;       /* Justo debajo del header (z-index: 100) */
   }
   .progress-bar {
     height: 100%;
-    background: linear-gradient(90deg, var(--basic), var(--accent), var(--adv));
-    transition: width 0.4s ease;
-    width: 0%;
+    background: linear-gradient(90deg, var(--basic), var(--accent), var(--adv)); /* Degradado de 3 colores */
+    transition: width 0.4s ease; /* Animación suave al actualizar el progreso */
+    width: 0%;                   /* Comienza en 0%, JS lo actualiza */
   }
 
-  /* LAYOUT */
+  /* -------------------------------------------------------
+     LAYOUT PRINCIPAL: grid de 2 columnas
+     - Columna 1 (280px): sidebar de navegación lateral
+     - Columna 2 (1fr): área de contenido del ejercicio
+     ------------------------------------------------------- */
   .container {
     display: grid;
-    grid-template-columns: 280px 1fr;
-    min-height: calc(100vh - 64px);
+    grid-template-columns: 280px 1fr; /* Sidebar fijo + contenido flexible */
+    min-height: calc(100vh - 64px);   /* Resta la altura del header */
   }
 
-  /* SIDEBAR */
+  /* -------------------------------------------------------
+     SIDEBAR: panel de navegación lateral fijo
+     position: sticky + overflow-y: auto permite que tenga
+     su propio scroll si hay muchos ejercicios.
+     ------------------------------------------------------- */
   aside {
     border-right: 1px solid var(--border);
     padding: 24px 0;
-    position: sticky;
-    top: 67px;
-    height: calc(100vh - 67px);
-    overflow-y: auto;
+    position: sticky;              /* Se fija al hacer scroll */
+    top: 67px;                     /* Debajo del header (64px) + barra progreso (3px) */
+    height: calc(100vh - 67px);    /* Ocupa el resto de la pantalla */
+    overflow-y: auto;              /* Scroll independiente si hay muchos items */
   }
 
   .sidebar-section {
@@ -181,15 +226,21 @@
     max-width: 900px;
   }
 
+  /* -------------------------------------------------------
+     EJERCICIOS: cada ejercicio está oculto por defecto (display:none).
+     Solo el que tiene la clase .visible se muestra.
+     Al aparecer, se ejecuta la animación fadeSlide.
+     ------------------------------------------------------- */
   .exercise {
     display: none;
-    animation: fadeSlide 0.35s ease forwards;
+    animation: fadeSlide 0.35s ease forwards; /* Aparece con animación */
   }
-  .exercise.visible { display: block; }
+  .exercise.visible { display: block; } /* Clase que activa la visibilidad */
 
+  /* Animación de entrada: el ejercicio sube suavemente y aparece */
   @keyframes fadeSlide {
-    from { opacity: 0; transform: translateY(12px); }
-    to   { opacity: 1; transform: translateY(0); }
+    from { opacity: 0; transform: translateY(12px); } /* Comienza invisible y desplazado */
+    to   { opacity: 1; transform: translateY(0); }    /* Llega a posición normal */
   }
 
   /* EXERCISE HEADER */
@@ -335,12 +386,19 @@
 
   .hint-card.open .hint-arrow { transform: rotate(180deg); }
 
+  /* -------------------------------------------------------
+     TARJETAS DE DICAS (acordeón colapsable)
+     El truco del acordeón CSS: max-height comienza en 0
+     y al agregar la clase .open se expande hasta 500px.
+     La transición anima ese cambio suavemente.
+     ------------------------------------------------------- */
   .hint-body {
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.35s ease;
+    max-height: 0;           /* Contenido oculto (colapsado) */
+    overflow: hidden;        /* Oculta el desbordamiento durante la transición */
+    transition: max-height 0.35s ease; /* Animación de apertura/cierre */
   }
 
+  /* Cuando la tarjeta tiene la clase .open, se expande */
   .hint-card.open .hint-body { max-height: 500px; }
 
   .hint-content {
@@ -596,9 +654,14 @@
     font-weight: 700;
   }
 
-  /* TOAST */
+  /* -------------------------------------------------------
+     TOAST: notificación flotante que aparece brevemente
+     al completar un ejercicio. Comienza desplazada hacia
+     abajo (translateY 80px) e invisible. Al agregar
+     la clase .show sube a su posición y se hace visible.
+     ------------------------------------------------------- */
   .toast {
-    position: fixed;
+    position: fixed;         /* Posición fija respecto al viewport */
     bottom: 30px;
     right: 30px;
     background: var(--panel);
@@ -608,12 +671,13 @@
     font-family: 'JetBrains Mono', monospace;
     font-size: 12px;
     color: var(--basic);
-    transform: translateY(80px);
-    opacity: 0;
-    transition: all 0.3s;
-    z-index: 999;
-    border-left: 3px solid var(--basic);
+    transform: translateY(80px); /* Empieza fuera de la pantalla (abajo) */
+    opacity: 0;                  /* Empieza invisible */
+    transition: all 0.3s;        /* Transición suave al aparecer */
+    z-index: 999;                /* Encima de todo el contenido */
+    border-left: 3px solid var(--basic); /* Acento visual izquierdo */
   }
+  /* Clase que activa la aparición del toast */
   .toast.show { transform: translateY(0); opacity: 1; }
 
   /* SCROLLBAR */
@@ -621,11 +685,16 @@
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 
+  /* -------------------------------------------------------
+     RESPONSIVE: ajustes para pantallas pequeñas (móviles)
+     En pantallas <= 768px se oculta el sidebar y el grid
+     pasa a una sola columna para mejor usabilidad.
+     ------------------------------------------------------- */
   @media (max-width: 768px) {
-    .container { grid-template-columns: 1fr; }
-    aside { display: none; }
-    main { padding: 24px 20px; }
-    header { padding: 0 20px; }
+    .container { grid-template-columns: 1fr; } /* Una sola columna en móvil */
+    aside { display: none; }                   /* Oculta el sidebar lateral */
+    main { padding: 24px 20px; }               /* Reduce el padding */
+    header { padding: 0 20px; }               /* Reduce padding del header */
   }
 </style>
 </head>
@@ -1188,41 +1257,108 @@
 <div class="toast" id="toast"></div>
 
 <script>
+  // ============================================================
+  // ESTADO GLOBAL DE LA APLICACIÓN
+  // ============================================================
+
+  // Registra cuál es el ejercicio actualmente visible (0 = pantalla de bienvenida)
   let currentEx = 0;
-  // Load done state from localStorage
+
+  // Carga el estado de ejercicios completados desde localStorage.
+  // Si no existe ningún dato guardado, usa un objeto vacío {}.
+  // localStorage persiste los datos aunque el usuario cierre el navegador.
+  // Formato esperado: { "1": true, "2": false, "3": true, ... }
   let done = JSON.parse(localStorage.getItem('ex_done') || '{}');
 
+
+  // ============================================================
+  // FUNCIÓN: showExercise(n)
+  // Muestra el ejercicio con número n y oculta todos los demás.
+  // También actualiza el ítem activo en la barra lateral.
+  // n = 0 corresponde a la pantalla de bienvenida.
+  // ============================================================
   function showExercise(n) {
+    // Recorre todos los elementos con clase .exercise y quita la clase .visible
+    // de manera que todos queden ocultos (display: none via CSS)
     document.querySelectorAll('.exercise').forEach(e => e.classList.remove('visible'));
+
+    // Agrega la clase .visible solo al ejercicio seleccionado, haciéndolo visible
     document.getElementById('ex-' + n).classList.add('visible');
 
+    // Quita la clase .active de todos los items del sidebar
     document.querySelectorAll('.ex-item').forEach(e => e.classList.remove('active'));
+
+    // Si no es la pantalla de bienvenida (n > 0), marca el item del sidebar como activo
     if (n > 0) {
       document.getElementById('nav-' + n).classList.add('active');
     }
 
+    // Guarda el ejercicio actual en la variable de estado global
     currentEx = n;
+
+    // Hace scroll suave hacia la parte superior de la página al cambiar de ejercicio
     window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    // Actualiza la barra de progreso y el contador
     updateProgress();
   }
 
+
+  // ============================================================
+  // FUNCIÓN: toggleHint(card)
+  // Abre o cierra una tarjeta de dica (acordeón).
+  // Recibe el elemento DOM de la tarjeta clicada.
+  // classList.toggle agrega la clase si no existe, y la quita si existe.
+  // El CSS controla la animación de expansión con max-height.
+  // ============================================================
   function toggleHint(card) {
-    card.classList.toggle('open');
+    card.classList.toggle('open'); // Alterna la clase .open en la tarjeta
   }
 
+
+  // ============================================================
+  // FUNCIÓN: filterLevel(level)
+  // Filtra y muestra el primer ejercicio del nivel seleccionado.
+  // Parámetro level: 'basic', 'inter' o 'adv'
+  // También resalta el badge del nivel seleccionado en el header.
+  // ============================================================
   function filterLevel(level) {
+    // Mapa de nivel → array con los números de ejercicios de ese nivel
     const map = { basic: [1,2], inter: [3,4], adv: [5,6] };
+
+    // Obtiene los ejercicios del nivel seleccionado
     const targets = map[level];
+
+    // Navega al primer ejercicio del nivel (ej: básico → ejercicio 1)
     showExercise(targets[0]);
+
+    // Quita la clase .active de todos los badges del header
     document.querySelectorAll('.badge').forEach(b => b.classList.remove('active'));
+
+    // Agrega .active al badge del nivel seleccionado para resaltarlo visualmente
     document.querySelector(`.badge.${level}`).classList.add('active');
   }
 
+
+  // ============================================================
+  // FUNCIÓN: copyCode(btn, id)
+  // Copia el contenido de un bloque de código al portapapeles.
+  // btn: el botón "copiar" que fue clicado
+  // id: el id del elemento <pre> o <code> que contiene el código
+  // Usa la API navigator.clipboard (asíncrona, requiere HTTPS).
+  // ============================================================
   function copyCode(btn, id) {
+    // Obtiene el texto del elemento de código por su id
     const code = document.getElementById(id).innerText;
+
+    // Escribe el texto en el portapapeles del usuario
+    // .then() se ejecuta cuando la operación termina con éxito
     navigator.clipboard.writeText(code).then(() => {
+      // Feedback visual inmediato: cambia el texto del botón
       btn.textContent = '✓ copiado!';
-      btn.classList.add('copied');
+      btn.classList.add('copied'); // Agrega clase para cambiar estilo del botón
+
+      // Después de 2 segundos, restaura el texto y estilo original del botón
       setTimeout(() => {
         btn.textContent = 'copiar';
         btn.classList.remove('copied');
@@ -1230,67 +1366,145 @@
     });
   }
 
+
+  // ============================================================
+  // FUNCIÓN: showToast(msg)
+  // Muestra una notificación temporal (toast) en la esquina
+  // inferior derecha con el mensaje indicado.
+  // El toast desaparece automáticamente después de 2.5 segundos.
+  // ============================================================
   function showToast(msg) {
-    const t = document.getElementById('toast');
-    t.textContent = msg;
-    t.classList.add('show');
+    const t = document.getElementById('toast'); // Obtiene el elemento toast del DOM
+    t.textContent = msg;          // Establece el mensaje a mostrar
+    t.classList.add('show');      // Activa la animación de entrada (CSS)
+
+    // Quita la clase .show después de 2500ms, ocultando el toast
     setTimeout(() => t.classList.remove('show'), 2500);
   }
 
+
+  // ============================================================
+  // FUNCIÓN: toggleDone(n)
+  // Marca o desmarca un ejercicio como completado.
+  // Guarda el estado en localStorage para persistir entre sesiones.
+  // Actualiza la interfaz visual y muestra notificación toast.
+  // ============================================================
   function toggleDone(n) {
+    // Invierte el estado del ejercicio n (true → false, false → true)
+    // Si done[n] no existe, !undefined = true (lo marca como completado)
     done[n] = !done[n];
+
+    // Guarda el objeto actualizado en localStorage como JSON string
     localStorage.setItem('ex_done', JSON.stringify(done));
+
+    // Actualiza el aspecto visual de todos los botones y el sidebar
     applyDoneStates();
+
+    // Actualiza la barra de progreso
     updateProgress();
+
+    // Solo muestra el toast cuando se marca como completado (no al desmarcar)
     if (done[n]) {
       showToast('✓ Exercício ' + n + ' marcado como concluído!');
     }
   }
 
-  function applyDoneStates() {
-    for (let i = 1; i <= 6; i++) {
-      const btn = document.getElementById('done-' + i);
-      const navItem = document.getElementById('nav-' + i);
-      const wcards = document.querySelectorAll('.welcome-card');
 
+  // ============================================================
+  // FUNCIÓN: applyDoneStates()
+  // Recorre los 6 ejercicios y actualiza el estado visual de:
+  //   - Botón "Concluído" de cada ejercicio
+  //   - Item correspondiente en el sidebar
+  //   - Tarjeta de bienvenida correspondiente
+  // Se llama al iniciar la página y cada vez que cambia el estado.
+  // ============================================================
+  function applyDoneStates() {
+    // Itera sobre cada uno de los 6 ejercicios
+    for (let i = 1; i <= 6; i++) {
+      const btn = document.getElementById('done-' + i);    // Botón "Concluído"
+      const navItem = document.getElementById('nav-' + i); // Item del sidebar
+      const wcards = document.querySelectorAll('.welcome-card'); // Tarjetas de bienvenida
+
+      // Actualiza el botón "Concluído" si existe en el DOM
       if (btn) {
+        // Nota: ambos valores del ternario son iguales; se podría simplificar.
+        // El estado visual se controla por la clase CSS, no por el texto.
         btn.textContent = done[i] ? '✓ Concluído' : '✓ Concluído';
+
+        // Agrega/quita la clase .concluido según el estado
+        // !! convierte el valor a booleano (undefined → false)
         btn.classList.toggle('concluido', !!done[i]);
       }
+
+      // Marca el item del sidebar con la clase .done (muestra el ✓)
       if (navItem) {
         navItem.classList.toggle('done', !!done[i]);
       }
-      // welcome cards: index 0=ex1 ... 5=ex6
+
+      // Las tarjetas de bienvenida van de índice 0 (ejercicio 1) a 5 (ejercicio 6)
+      // Se usa i-1 para convertir el número de ejercicio al índice del array
       if (wcards[i-1]) {
         wcards[i-1].classList.toggle('done-card', !!done[i]);
       }
     }
   }
 
+
+  // ============================================================
+  // FUNCIÓN: updateProgress()
+  // Calcula el porcentaje de ejercicios completados y actualiza:
+  //   - La barra de progreso superior (progressBar)
+  //   - El porcentaje mostrado en la pantalla de bienvenida (statusPct)
+  //   - La barra de progreso de la bienvenida (statusFill)
+  //   - El texto descriptivo del progreso (statusDetail)
+  // ============================================================
   function updateProgress() {
-    const total = 6;
+    const total = 6; // Total de ejercicios disponibles
+
+    // Cuenta cuántos ejercicios tienen el valor true en el objeto done
+    // Object.values() convierte el objeto a array de valores [true, false, ...]
+    // .filter(Boolean) filtra solo los valores verdaderos
     const count = Object.values(done).filter(Boolean).length;
+
+    // Calcula el porcentaje redondeado al entero más cercano
     const pct = Math.round((count / total) * 100);
 
-    // Top progress bar
+    // Actualiza el ancho de la barra de progreso superior
     document.getElementById('progressBar').style.width = pct + '%';
 
-    // Welcome screen status
-    const pctEl = document.getElementById('statusPct');
-    const fillEl = document.getElementById('statusFill');
+    // Obtiene los elementos de la pantalla de bienvenida (pueden no existir si no es ex-0)
+    const pctEl    = document.getElementById('statusPct');
+    const fillEl   = document.getElementById('statusFill');
     const detailEl = document.getElementById('statusDetail');
+
+    // Actualiza el texto del porcentaje (ej: "50%")
     if (pctEl) pctEl.textContent = pct + '%';
+
+    // Actualiza el ancho de la barra de progreso de la bienvenida
     if (fillEl) fillEl.style.width = pct + '%';
+
+    // Actualiza el texto descriptivo según el estado de avance
     if (detailEl) {
-      if (count === 0) detailEl.textContent = '0 de 6 exercícios concluídos — comece agora!';
-      else if (count === total) detailEl.textContent = '🎉 Todos os exercícios concluídos!';
-      else detailEl.textContent = count + ' de ' + total + ' exercícios concluídos';
+      if (count === 0)
+        // Sin ejercicios completados: anima al usuario a comenzar
+        detailEl.textContent = '0 de 6 exercícios concluídos — comece agora!';
+      else if (count === total)
+        // Todos completados: mensaje de felicitación
+        detailEl.textContent = '🎉 Todos os exercícios concluídos!';
+      else
+        // Estado intermedio: muestra cuántos faltan
+        detailEl.textContent = count + ' de ' + total + ' exercícios concluídos';
     }
   }
 
-  // Init on load
-  applyDoneStates();
-  updateProgress();
+
+  // ============================================================
+  // INICIALIZACIÓN AL CARGAR LA PÁGINA
+  // Se ejecuta una vez cuando el script es procesado por el navegador.
+  // Restaura el estado guardado y actualiza la UI con los datos del localStorage.
+  // ============================================================
+  applyDoneStates(); // Aplica el estado de ejercicios completados del localStorage
+  updateProgress();  // Actualiza la barra de progreso con el estado actual
 </script>
 </body>
 </html>
